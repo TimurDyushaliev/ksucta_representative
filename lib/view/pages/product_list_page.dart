@@ -1,23 +1,29 @@
-import 'package:accident_registration/resource/string_resource.dart';
+import 'package:accident_registration/models/store_model.dart';
 import 'package:accident_registration/services/hive_provider.dart';
 import 'package:accident_registration/view/pages/add_item_page.dart';
-import 'package:accident_registration/view/pages/product_list_page.dart';
+import 'package:accident_registration/view/pages/product_info_page.dart';
 import 'package:flutter/material.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({Key? key}) : super(key: key);
+class ProductListPage extends StatefulWidget {
+  const ProductListPage({Key? key, required this.storeModel}) : super(key: key);
 
+  final StoreModel storeModel;
+
+  @override
+  State<ProductListPage> createState() => _ProductListPageState();
+}
+
+class _ProductListPageState extends State<ProductListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Text(StringResource.home.stores),
+        title: Text(widget.storeModel.name),
       ),
       body: StreamBuilder(
-        stream: HiveProvider.storesStream(),
+        stream: HiveProvider.productsStream(),
         builder: (context, snapshot) {
-          final models = HiveProvider.getStores();
+          final models = HiveProvider.getProducts();
           return ListView.builder(
             itemCount: models.length,
             itemBuilder: (context, index) {
@@ -33,17 +39,17 @@ class HomePage extends StatelessWidget {
                   ),
                 ),
                 onDismissed: (direction) {
-                  HiveProvider.deleteStore(index);
+                  HiveProvider.deleteProduct(index);
                 },
                 child: ListTile(
                   title: Text(models[index].name),
-                  subtitle: Text(models[index].address),
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ProductListPage(
-                          storeModel: models[index],
+                        builder: (context) => ProductInfoPage(
+                          index: index,
+                          model: models[index],
                         ),
                       ),
                     );
@@ -60,7 +66,7 @@ class HomePage extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (context) => const AddItemPage(
-                type: AddItemPageType.store,
+                type: AddItemPageType.product,
               ),
             ),
           );
